@@ -1,0 +1,36 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Fetch recent updates
+      run: git fetch --prune --unshallow
+      
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11.0.4
+        
+    - name: Amend permission for maven wrapper
+      run: chmod +x mvnw
+          
+    - name: Build with Maven
+      run: ./mvnw -B package --file pom.xml
+      
+    - name: Run code analysis
+      run: ./mvnw sonar:sonar -Dsonar.projectKey=pos-my_boot-rest-api-interview -Dsonar.organization=pos-my -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_LOGIN }} -Dsonar.coverage.jacoco.xmlReportPaths=target/surefire-reports/TEST-*.xml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
